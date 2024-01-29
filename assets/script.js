@@ -23,7 +23,9 @@ function getAll() {
     getDiscogs();
     getLast();
     getTicket();
-    getBands();
+    // getBands();
+    console.log(spotifyToken);
+    getImages();
     window.scrollTo(0, 1000)
 }
 
@@ -64,16 +66,16 @@ function getDiscogs() {
         return response.json();
       })
       .then(function(data) {
-        console.log(data);
+        // console.log(data);
         const artistId = data.results[0].id;
-        console.log(`Artist ID: ${artistId}`);
+        // console.log(`Artist ID: ${artistId}`);
         return fetch(`https://api.discogs.com/database/search?artist=${encodeURIComponent(bandName)}&type=release&format=album&sort=year&sort_order=asc&key=${apiKey}&secret=${apiSecret}`);
       })
       .then(function(response) {
         return response.json();
       })
       .then(function(data) {
-        console.log(data);
+        // console.log(data);
         let addedTitles = [];
         for (let i = 0; i < data.results.length; i++) {
           if (data.results[i].country === 'US') {
@@ -117,7 +119,7 @@ function getLast() {
             return response.json();
         })
         .then(function (data) {
-            console.log(data);
+            // console.log(data);
             const bio = data.artist.bio.content;
             const bioEl = document.createElement('p');
             bioEl.textContent = bio;
@@ -147,7 +149,7 @@ function getTicket() {
             return response.json();
         })
         .then(function (data) {
-            console.log(data);
+            // console.log(data);
             for (let i = 0; i < 10; i++) {
                 tourDate[i] = data._embedded.events[i].dates.start.localDate;
                 tourVenue[i] = data._embedded.events[i]._embedded.venues[0].name;
@@ -213,21 +215,64 @@ function getFavoriteEvents() {
 }
 
 // function to get bandsintown API -- band images
-const bandsId = 'e1f5697f497a738baf58064c137d1e8b'
+// const bandsId = 'e1f5697f497a738baf58064c137d1e8b'
 
-function getBands() {
-    fetch('https://rest.bandsintown.com/artists/' + bandName + '/?app_id=' + bandsId)
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (data) {
+// function getBands() {
+//     fetch('https://rest.bandsintown.com/artists/' + bandName + '/?app_id=' + bandsId)
+//         .then(function (response) {
+//             return response.json();
+//         })
+//         .then(function (data) {
+//             console.log(data);
+//             let bandImg = data.image_url;
+//             let bandImgEl = document.createElement('img');
+//             bandImgEl.setAttribute('src', bandImg);
+//             photo.appendChild(bandImgEl);
+//             bandImgEl.classList.add('is-rounded');
+//         })
+// }
+
+// function(s) to call spotify for images and discography
+const spotifyId = "6787d1488ea5406fbed009d6123954fb";
+const spotifySecret = "513f556ec09b4c3c8330732d84a763d4";
+let spotifyToken;
+
+async function getSpotifyToken() {
+    let authParameters = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `grant_type=client_credentials&client_id=${spotifyId}&client_secret=${spotifySecret}`
+      };
+
+      spotifyToken = await fetch('https://accounts.spotify.com/api/token', authParameters)
+        .then(result => result.json())
+        .then(data => {
+            console.log(data.access_token);
+            return data.access_token
+        });
+}
+
+function getImages(){
+    let artistParameters = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + spotifyToken
+        }
+      }
+
+    fetch(`https://api.spotify.com/v1/search?q=${bandName}&type=artist`, artistParameters)
+        .then(response => response.json())
+        .then(data => {
             console.log(data);
-            let bandImg = data.image_url;
+            let bandImg = data.artists.items[0].images[0].url;
             let bandImgEl = document.createElement('img');
             bandImgEl.setAttribute('src', bandImg);
             photo.appendChild(bandImgEl);
             bandImgEl.classList.add('is-rounded');
-        })
+    })
 }
 
 // variables and open/close functions for discography modal
@@ -372,6 +417,6 @@ function clearAbout(event) {
 }
 
 // clearAbout();
-
+getSpotifyToken();
 getFavoriteBands();
 getFavoriteEvents();

@@ -11,6 +11,15 @@ body{
     z-index: 100;
 }
 
+.artist-title {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin: 20px;
+    width: 480px;
+    overflow-x: visible;
+}
+
 .title {
     font-size: 80px;
 }
