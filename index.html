@@ -78,21 +78,21 @@
             <div id="contact-modal" class="modal">
               <div id="contact-content" class="modal-content">
                 <span class="close">&times;</span>
-                <h2>Contact Us!</h2>
+                <h1 class="mb-3">Contact Us</h1>
                 <form id="contact-form" method="post">
                   <label for="name">Name:</label>
                   <br>
-                  <input type="text" id="name" name="name" required>
+                  <input class="input is-small is-primary is-rounded" type="text" id="name" name="name" placeholder="name" required>
                   <br>
                   <label for="email">Email:</label>
                   <br>
-                  <input type="email" id="email" name="email" required>
+                  <input class="input is-small is-primary is-rounded" type="email" id="email" name="email" placeholder="email"required>
                   <br>
                   <label for="message">Message:</label>
                   <br>
-                  <textarea id="message" name="message" required></textarea>
+                  <textarea class="textarea" rows="5" id="message" name="message" placeholder="tell us what ya think!" required></textarea>
                   <br>
-                  <button class="submit" type="submit">Submit</button>
+                  <button class="submit button" type="submit">Submit</button>
                   </form>
               </div>
             </div>
@@ -107,9 +107,9 @@
     <section class="section">
       <div class="artist-title">
         <h1 class="title">YOUR BAND HERE</h1>
-          <span class="icon">
+          <div class="icon">
             <i id="star" class="fa-regular fa-star fa-2xl"></i>
-          </span>
+          </div>
       </div>
       <!-- div for tour, photo , bio content (will format later)-->
       <div class="artist-content">

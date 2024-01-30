@@ -20,10 +20,8 @@ function getAll() {
     clearFields();
     getStar();
     getBandTitle();
-    // getDiscogs();
     getLast();
     getTicket();
-    // getBands();
     getImagesAndDisc();
     window.scrollTo(0, 1000)
 }
