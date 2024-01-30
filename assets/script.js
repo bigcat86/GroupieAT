@@ -20,12 +20,11 @@ function getAll() {
     clearFields();
     getStar();
     getBandTitle();
-    getDiscogs();
+    // getDiscogs();
     getLast();
     getTicket();
     // getBands();
-    console.log(spotifyToken);
-    getImages();
+    getImagesAndDisc();
     window.scrollTo(0, 1000)
 }
 
@@ -54,60 +53,6 @@ function getBandTitle() {
     title.appendChild(titleEl);
 }
 
-// get album cover images and titles from Discogs API
-let discImage = [];
-let discImageEl = [];
-let discTitle = [];
-let discTitleEl = [];
-
-function getDiscogs() {
-    fetch(`https://api.discogs.com/database/search?type=artist&q=${bandName}&key=${apiKey}&secret=${apiSecret}`)
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        // console.log(data);
-        const artistId = data.results[0].id;
-        // console.log(`Artist ID: ${artistId}`);
-        return fetch(`https://api.discogs.com/database/search?artist=${encodeURIComponent(bandName)}&type=release&format=album&sort=year&sort_order=asc&key=${apiKey}&secret=${apiSecret}`);
-      })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        // console.log(data);
-        let addedTitles = [];
-        for (let i = 0; i < data.results.length; i++) {
-          if (data.results[i].country === 'US') {
-            const title = data.results[i].title;
-            if (!addedTitles.includes(title)) {
-              addedTitles.push(title);
-              discImage[i] = data.results[i].thumb;
-              discTitle[i] = title;
-              discImageEl[i] = document.createElement('img');
-              discTitleEl[i] = document.createElement('a');
-              discImageEl[i].setAttribute('src', discImage[i]);
-              discTitleEl[i].textContent = discTitle[i];
-              
-              // Add Bulma classes to the created elements
-              discImageEl[i].classList.add('column', 'is-one-quarter', 'image', 'is-rounded');
-              discTitleEl[i].classList.add('column', 'is-three-quarters', 'has-text-weight-bold');
-              
-              const divEl = document.createElement('div');
-              divEl.classList.add('columns', 'is-mobile', 'is-vcentered', 'fixed-width');
-              divEl.style.height = "auto";
-              divEl.appendChild(discImageEl[i]);
-              divEl.appendChild(discTitleEl[i]);
-              discography.appendChild(divEl);
-            }
-          }
-        }
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-  }
-
 // function to call the lastFM API to get bio
 const lastKey = 'f54a71e4cffac64ddae0c640e1c20b04'
 const lastSecret = '1a1cfb229ad5b54371350b86f7a4c32a'
@@ -126,7 +71,6 @@ function getLast() {
             bioDiv.appendChild(bioEl);
         })
 }
-
 
 // variables and function to ticketmaster -- for events
 const ticketKey = 'UcycjsGfTYWd0RhGEctxiUWtpRjqQXm8'
@@ -214,24 +158,6 @@ function getFavoriteEvents() {
     }
 }
 
-// function to get bandsintown API -- band images
-// const bandsId = 'e1f5697f497a738baf58064c137d1e8b'
-
-// function getBands() {
-//     fetch('https://rest.bandsintown.com/artists/' + bandName + '/?app_id=' + bandsId)
-//         .then(function (response) {
-//             return response.json();
-//         })
-//         .then(function (data) {
-//             console.log(data);
-//             let bandImg = data.image_url;
-//             let bandImgEl = document.createElement('img');
-//             bandImgEl.setAttribute('src', bandImg);
-//             photo.appendChild(bandImgEl);
-//             bandImgEl.classList.add('is-rounded');
-//         })
-// }
-
 // function(s) to call spotify for images and discography
 const spotifyId = "6787d1488ea5406fbed009d6123954fb";
 const spotifySecret = "513f556ec09b4c3c8330732d84a763d4";
@@ -249,30 +175,60 @@ async function getSpotifyToken() {
       spotifyToken = await fetch('https://accounts.spotify.com/api/token', authParameters)
         .then(result => result.json())
         .then(data => {
-            console.log(data.access_token);
             return data.access_token
         });
-}
+        console.log(spotifyToken);
+};
 
-function getImages(){
+let discImage = [];
+let discImageEl = [];
+let discTitle = [];
+let discTitleEl = [];
+
+async function getImagesAndDisc(){
+
     let artistParameters = {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + spotifyToken
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + spotifyToken
         }
-      }
+    }
 
-    fetch(`https://api.spotify.com/v1/search?q=${bandName}&type=artist`, artistParameters)
+    let artistId =  await fetch(`https://api.spotify.com/v1/search?q=${bandName}&type=artist`, artistParameters)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             let bandImg = data.artists.items[0].images[0].url;
             let bandImgEl = document.createElement('img');
             bandImgEl.setAttribute('src', bandImg);
             photo.appendChild(bandImgEl);
             bandImgEl.classList.add('is-rounded');
-    })
+            return data.artists.items[0].id;
+        })
+
+    fetch(`https://api.spotify.com/v1/artists/${artistId}/albums`, artistParameters)
+        .then(response => response.json())
+        .then(data => {
+            for (let i = 0; i < data.items.length; i++) {
+              discImage[i] = data.items[i].images[0].url;
+              discTitle[i] = data.items[i].name;
+              discImageEl[i] = document.createElement('img');
+              discTitleEl[i] = document.createElement('a');
+              discImageEl[i].setAttribute('src', discImage[i]);
+              discTitleEl[i].textContent = discTitle[i];
+              
+              // Add Bulma classes to the created elements
+              discImageEl[i].classList.add('column', 'is-one-quarter', 'image', 'is-rounded');
+              discTitleEl[i].classList.add('column', 'is-three-quarters', 'has-text-weight-bold');
+              
+              const divEl = document.createElement('div');
+              divEl.classList.add('columns', 'is-mobile', 'is-vcentered', 'fixed-width');
+              divEl.style.height = "auto";
+              divEl.appendChild(discImageEl[i]);
+              divEl.appendChild(discTitleEl[i]);
+              discography.appendChild(divEl);
+            }
+        })
 }
 
 // variables and open/close functions for discography modal
@@ -380,23 +336,19 @@ var modal = document.getElementById("contact-modal");
 var btn = document.getElementById("contact-btn");
 var span = document.getElementsByClassName("close")[0];
 
-
 btn.onclick = function() {
  modal.style.display = "block";
 }
 
-
 span.onclick = function() {
  modal.style.display = "none";
 }
-
 
 window.onclick = function(event) {
  if (event.target == modal) {
    modal.style.display = "none";
  }
 }
-
 
 const aboutModal = document.querySelector('#about-info');
 const aboutBtn = document.querySelector('#about-btn');
